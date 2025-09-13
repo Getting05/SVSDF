@@ -1,0 +1,74 @@
+# MapEx SLAM集成配置 - 严格按照官方参数
+# 官方参数
+root_path: "/home/getting/SVSDF/MapEx/"
+num_data_per_world: 1
+test_world_only: false
+output_folder_name: "experiments"
+cur_pose_dist_threshold_m: 1 #这个参数表示机器人距离前沿多近时认为"已到达"并重新选择目标
+modes_to_test: ["nearest"]
+#modes_to_test: ['nearest', 'obsunk', 'onlyvar', 'visunk', 'visvar', 'visvarprob', 'upen', 'hectoraug']
+unknown_as_occ: true
+use_distance_transform_for_planning: true
+
+# 官方UPEN配置
+upen_config:
+  rrt_max_iters: 2500
+  expand_dis: 5
+  goal_sample_rate: -1
+  connect_circle_dist: 20
+  rrt_num_path: 1000
+  rrt_straight_line: false
+  reach_horizon: 50
+  goal_pose_freq: 10
+
+# 官方激光雷达配置 - 修复膨胀半径问题
+lidar_sim_configs:
+  laser_range_m: 20
+  num_laser: 2500
+  pixel_per_meter: 10
+  dilate_diam_for_planning: 4 # 关键修复：大幅减少膨胀半径从10到3，防止错误障碍物膨胀
+
+# 官方预测可视化配置
+pred_vis_configs:
+  laser_range_m: 20
+  pixel_per_meter: 10
+  num_laser: 250
+
+# 官方任务配置
+mission_time: 100000
+show_plt_freq: 50
+max_workers: 1
+
+# 官方模型配置
+ensemble_folder_name: "weights/lama_ensemble"
+n_spatial_classes: 3
+map_loss_scale: 1.0
+big_lama_model_folder_name: "weights/big_lama"
+lama_transform_variant: "default_map_eval"
+lama_device: "cpu"
+lama_out_size: [512, 512]
+
+# === 以下为SLAM集成必需参数（官方没有） ===
+
+# SLAM模式配置 - 启用真值位置模式
+collect_world_list: null
+use_slam_integration: true
+wait_for_slam_map: true
+start_pose: null
+use_ground_truth_pose: true # 关键修复：启用真值位置模式，防止地图漂移
+coordinate_source: "isaac_sim_ground_truth" # 标明坐标来源
+
+# Socket通信配置
+socket_bridge_config:
+  host: "localhost"
+  port: 9998
+  timeout: 5.0
+  retry_count: 20
+  retry_interval: 2.0
+
+# ROS话题配置
+ros_integration:
+  slam_map_topic: "/map"
+  robot_pose_topic: "/robot_pose"
+  cmd_vel_topic: "/cmd_vel"
+  exploration_done_topic: "/exploration_done"
